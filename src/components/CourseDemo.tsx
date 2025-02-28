@@ -18,6 +18,10 @@ const CourseDemo = ({ videoUrl }: CourseDemoProps) => {
     setIsPlaying(true);
   };
 
+  // Calculate target date for countdown (3 days from now)
+  const threeDaysFromNow = new Date();
+  threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+
   return (
     <section className="py-16 bg-white relative overflow-hidden">
       <div className="container mx-auto px-4">
@@ -89,7 +93,7 @@ const CourseDemo = ({ videoUrl }: CourseDemoProps) => {
               </div>
 
               <div className="flex items-center gap-3">
-                <CountdownTimer targetDate={new Date().getTime() + 3 * 24 * 60 * 60 * 1000} />
+                <CountdownTimer endDate={threeDaysFromNow.getTime()} />
                 <button className="btn-primary whitespace-nowrap flex items-center gap-1">
                   Ver Curso <ChevronRight className="w-4 h-4" />
                 </button>
@@ -121,6 +125,15 @@ const CourseDemo = ({ videoUrl }: CourseDemoProps) => {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Logo in the bottom right corner */}
+      <div className="absolute bottom-4 right-4 z-10">
+        <img 
+          src="https://scontent.fbog9-1.fna.fbcdn.net/v/t39.30808-1/460658643_10160915755072968_221699432489046607_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=103&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=M7sm7dXUHPMQ7kNvgFQZ80V&_nc_oc=AdhvDybp8yjICyrjGkcTBht4DRVfY6Hi2SGG-UMkZgN-K15BERrnziVWiKyrlNBYiKPRrvMOIBW0HBTPIjRI7cub&_nc_zt=24&_nc_ht=scontent.fbog9-1.fna&_nc_gid=AVmUhsZOoHnVfGqb0740q0W&oh=00_AYCMojj3ItrYPRT6Ckv89hdQ7QQyQFxtvs_7Sy--DRxBrw&oe=67C6E60A" 
+          alt="Dulce Equilibrio Logo" 
+          className="w-16 h-16 rounded-full shadow-lg border-2 border-white"
+        />
       </div>
     </section>
   );
