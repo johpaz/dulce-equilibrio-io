@@ -20,7 +20,8 @@ export const signInWithGoogle = async () => {
       provider: 'google',
       options: {
         redirectTo: window.location.origin,
-        skipBrowserRedirect: false // Ensure this is false to allow browser redirect
+        // Important: don't skip the browser redirect to allow Supabase to handle auth properly
+        skipBrowserRedirect: false 
       },
     });
 
@@ -96,8 +97,10 @@ export const processOAuthRedirect = async () => {
   try {
     // Check if we're processing an OAuth redirect
     if (window.location.hash && window.location.hash.includes('access_token')) {
-      // Let Supabase handle the redirect
-      const { data, error } = await supabase.auth.getSession();
+      console.log('Processing OAuth redirect...');
+      
+      // Let Supabase handle the OAuth redirect
+      const { data, error } = await supabase.auth.getUser();
       
       if (error) {
         console.error('Error processing OAuth redirect:', error.message);
@@ -107,7 +110,8 @@ export const processOAuthRedirect = async () => {
       // Clear the URL hash to avoid issues with navigation
       window.history.replaceState({}, document.title, window.location.pathname);
       
-      return data.session?.user || null;
+      console.log('User authenticated:', data.user);
+      return data.user;
     }
     
     return null;

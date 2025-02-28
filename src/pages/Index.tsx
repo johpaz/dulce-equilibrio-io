@@ -70,20 +70,28 @@ const Index = () => {
     const initAuth = async () => {
       setLoading(true);
       try {
-        // First check if we're in a redirect flow
-        const redirectUser = await processOAuthRedirect();
-        
-        if (redirectUser) {
-          setUser(redirectUser);
-          toast({
-            title: "Inicio de sesión exitoso",
-            description: "¡Bienvenido de nuevo!",
-          });
-        } else {
-          // If not in redirect flow, check for existing session
-          const currentUser = await getCurrentUser();
-          setUser(currentUser);
+        // Handle hash fragment (OAuth redirect) first
+        if (window.location.hash && window.location.hash.includes('access_token')) {
+          console.log('Found access token in URL, processing OAuth redirect...');
+          const user = await processOAuthRedirect();
+          
+          if (user) {
+            console.log('Successfully authenticated user from redirect', user);
+            setUser(user);
+            toast({
+              title: "Inicio de sesión exitoso",
+              description: "¡Bienvenido de nuevo!",
+            });
+            setLoading(false);
+            return;
+          }
         }
+        
+        // If we're not in a redirect flow, check for existing session
+        console.log('Checking for existing session...');
+        const currentUser = await getCurrentUser();
+        console.log('Current user:', currentUser);
+        setUser(currentUser);
       } catch (error) {
         console.error("Error during authentication:", error);
       } finally {
@@ -96,10 +104,16 @@ const Index = () => {
     // Subscribe to auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         const currentUser = session?.user || null;
         setUser(currentUser);
         
         if (event === 'SIGNED_IN' && currentUser) {
+          // Clear URL hash if it exists
+          if (window.location.hash) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+          
           toast({
             title: "Inicio de sesión exitoso",
             description: "¡Bienvenido de nuevo!",
