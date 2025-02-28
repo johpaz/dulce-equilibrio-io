@@ -123,7 +123,11 @@ const HeroSection = ({ videoUrl }: HeroSectionProps) => {
                   </div>
                   
                   <div className="absolute -top-6 -right-6 bg-white rounded-full p-4 shadow-lg animate-fade-in delay-400">
-                    <img src="https://via.placeholder.com/60x60" alt="Logo Dulce Equilibrio" className="w-10 h-10" />
+                    <img 
+                      src="https://images2.imgbox.com/5c/d1/7JHIYoSq_o.png" 
+                      alt="Logo Dulce Equilibrio" 
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
                   </div>
                 </>
               )}
