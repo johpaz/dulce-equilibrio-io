@@ -12,7 +12,17 @@ const CourseDemo = ({ videoUrl }: CourseDemoProps) => {
   
   // Default video URL if none is provided from Supabase
   const defaultVideoUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ";
-  const videoToPlay = videoUrl || defaultVideoUrl;
+  
+  // Convert watch URL to embed URL if needed
+  const processVideoUrl = (url: string) => {
+    if (url && url.includes('youtube.com/watch?v=')) {
+      const videoId = url.split('v=')[1]?.split('&')[0];
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : defaultVideoUrl;
+    }
+    return url || defaultVideoUrl;
+  };
+  
+  const videoToPlay = processVideoUrl(videoUrl);
   
   const handlePlayClick = () => {
     setIsPlaying(true);
