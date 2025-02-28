@@ -46,7 +46,7 @@ const Index = () => {
       try {
         const { data, error } = await supabase
           .from('receta')
-          .select('etiqueta_video')
+          .select('video')
           .limit(1);
           
         if (error) {
@@ -54,8 +54,8 @@ const Index = () => {
           return;
         }
         
-        if (data && data.length > 0 && data[0].etiqueta_video) {
-          setVideoUrl(data[0].etiqueta_video);
+        if (data && data.length > 0 && data[0].video) {
+          setVideoUrl(data[0].video);
         }
       } catch (error) {
         console.error('Error fetching video URL:', error);

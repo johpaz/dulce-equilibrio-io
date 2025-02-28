@@ -93,7 +93,7 @@ const CourseDemo = ({ videoUrl }: CourseDemoProps) => {
               </div>
 
               <div className="flex items-center gap-3">
-                <CountdownTimer endDate={threeDaysFromNow.getTime()} />
+                <CountdownTimer initialHours={72} />
                 <button className="btn-primary whitespace-nowrap flex items-center gap-1">
                   Ver Curso <ChevronRight className="w-4 h-4" />
                 </button>
