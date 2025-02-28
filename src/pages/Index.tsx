@@ -45,7 +45,7 @@ const Index = () => {
     const fetchVideoUrl = async () => {
       try {
         const { data, error } = await supabase
-          .from('receta')
+          .from('recetas')
           .select('video')
           .limit(1);
           
