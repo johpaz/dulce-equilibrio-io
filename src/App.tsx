@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import { getCurrentUser } from "./utils/authUtils";
+import { getCurrentUser, processOAuthRedirect } from "./utils/authUtils";
 import Dashboard from "@/components/Dashboard";
 
 const queryClient = new QueryClient();
@@ -15,22 +14,43 @@ const queryClient = new QueryClient();
 const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    const checkAuth = async () => {
+    const initAuth = async () => {
+      setIsLoading(true);
+      
+      // First, check if we're in an OAuth redirect flow
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        const redirectUser = await processOAuthRedirect();
+        if (redirectUser) {
+          setUser(redirectUser);
+          setIsAuthenticated(true);
+          setIsLoading(false);
+          return;
+        }
+      }
+      
+      // Otherwise, check for existing session
       const currentUser = await getCurrentUser();
       setUser(currentUser);
       setIsAuthenticated(!!currentUser);
+      setIsLoading(false);
     };
     
-    checkAuth();
+    initAuth();
   }, []);
 
   // Crear un componente protegido para rutas que requieren autenticación
   const ProtectedRoute = ({ children }) => {
-    if (isAuthenticated === null) {
-      // Aún cargando, podríamos mostrar un spinner aquí
-      return <div className="flex items-center justify-center min-h-screen">Cargando...</div>;
+    if (isLoading) {
+      // Mostrar un spinner mientras carga
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-dulce-green border-r-transparent"></div>
+          <span className="ml-2">Cargando...</span>
+        </div>
+      );
     }
     
     if (!isAuthenticated) {

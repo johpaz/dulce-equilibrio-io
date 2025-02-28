@@ -20,8 +20,7 @@ export const signInWithGoogle = async () => {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/dashboard`,
-        // Important: don't skip the browser redirect to allow Supabase to handle auth properly
-        skipBrowserRedirect: false 
+        skipBrowserRedirect: false // Importante: permitir que Supabase maneje el redireccionamiento
       },
     });
 
@@ -60,6 +59,7 @@ export const signOut = async () => {
 // Function to get the current user
 export const getCurrentUser = async () => {
   try {
+    console.log('Checking for existing session...');
     // First check if we have a session
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     
@@ -70,6 +70,7 @@ export const getCurrentUser = async () => {
     
     // If there's no session or no user in the session, return null
     if (!sessionData.session) {
+      console.log('Current user: null');
       return null;
     }
     
@@ -81,6 +82,7 @@ export const getCurrentUser = async () => {
       return null;
     }
     
+    console.log('Current user:', data.user);
     return data.user;
   } catch (error) {
     console.error('Error inesperado al obtener usuario:', error);
@@ -91,6 +93,7 @@ export const getCurrentUser = async () => {
 // Function to handle auth state change manually (if needed)
 export const handleAuthStateChange = (callback) => {
   return supabase.auth.onAuthStateChange((event, session) => {
+    console.log('Auth state changed:', event, session?.user?.email);
     callback(event, session);
   });
 };
@@ -116,7 +119,9 @@ export const processOAuthRedirect = async () => {
       console.log('User authenticated:', data.user);
       
       // Redirigir al dashboard después de autenticación exitosa
-      window.location.href = '/dashboard';
+      if (window.location.pathname !== '/dashboard') {
+        window.location.href = '/dashboard';
+      }
       
       return data.user;
     }
