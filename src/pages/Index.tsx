@@ -8,13 +8,13 @@ import PricingTable from "@/components/PricingTable";
 import FAQ from "@/components/FAQ";
 import Dashboard from "@/components/Dashboard";
 import { ArrowUp, LogIn, LogOut, User } from "lucide-react";
-import { signInWithGoogle, signOut, getCurrentUser, supabase } from "@/utils/authUtils";
+import { signInWithGoogle, signOut, getCurrentUser, supabase, processOAuthRedirect } from "@/utils/authUtils";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [videoUrl, setVideoUrl] = useState("");
   const { toast } = useToast();
 
@@ -65,41 +65,67 @@ const Index = () => {
     fetchVideoUrl();
   }, []);
 
-  // Verificar si el usuario está autenticado al cargar la página
+  // Process OAuth redirect and check if user is authenticated
   useEffect(() => {
-    const checkUser = async () => {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
+    const initAuth = async () => {
+      setLoading(true);
+      try {
+        // First check if we're in a redirect flow
+        const redirectUser = await processOAuthRedirect();
+        
+        if (redirectUser) {
+          setUser(redirectUser);
+          toast({
+            title: "Inicio de sesión exitoso",
+            description: "¡Bienvenido de nuevo!",
+          });
+        } else {
+          // If not in redirect flow, check for existing session
+          const currentUser = await getCurrentUser();
+          setUser(currentUser);
+        }
+      } catch (error) {
+        console.error("Error during authentication:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     
-    checkUser();
+    initAuth();
     
-    // Suscribirse a los cambios de autenticación
+    // Subscribe to auth state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         const currentUser = session?.user || null;
         setUser(currentUser);
+        
+        if (event === 'SIGNED_IN' && currentUser) {
+          toast({
+            title: "Inicio de sesión exitoso",
+            description: "¡Bienvenido de nuevo!",
+          });
+        } else if (event === 'SIGNED_OUT') {
+          toast({
+            title: "Sesión cerrada",
+            description: "Has cerrado sesión correctamente.",
+          });
+        }
       }
     );
     
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, []);
+  }, [toast]);
 
   const handleLogin = async () => {
     if (user) {
-      // Si el usuario ya está autenticado, cerrar sesión
+      // If user is already authenticated, sign out
       setLoading(true);
       const { success, error } = await signOut();
       setLoading(false);
       
-      if (success) {
-        toast({
-          title: "Sesión cerrada",
-          description: "Has cerrado sesión correctamente.",
-        });
-      } else {
+      if (!success) {
         toast({
           title: "Error",
           description: error.message || "Error al cerrar sesión",
@@ -107,7 +133,7 @@ const Index = () => {
         });
       }
     } else {
-      // Iniciar sesión con Google
+      // Sign in with Google
       setLoading(true);
       const { success, error } = await signInWithGoogle();
       setLoading(false);
@@ -119,10 +145,11 @@ const Index = () => {
           variant: "destructive",
         });
       }
+      // No need for success toast here as the redirect will happen
     }
   };
 
-  // Si el usuario está autenticado, mostrar el dashboard
+  // If user is authenticated, show the dashboard
   if (user) {
     return (
       <>
@@ -154,6 +181,18 @@ const Index = () => {
 
         <Dashboard user={user} onLogout={() => setUser(null)} />
       </>
+    );
+  }
+
+  // Initial loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-dulce-beige-light/30">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-dulce-green border-r-transparent mb-4"></div>
+          <p className="text-dulce-green-dark">Cargando...</p>
+        </div>
+      </div>
     );
   }
 

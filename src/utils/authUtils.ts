@@ -13,13 +13,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Create the client with proper error handling
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Función para iniciar sesión con Google
+// Function to sign in with Google
 export const signInWithGoogle = async () => {
   try {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: window.location.origin,
+        skipBrowserRedirect: false // Ensure this is false to allow browser redirect
       },
     });
 
@@ -35,7 +36,7 @@ export const signInWithGoogle = async () => {
   }
 };
 
-// Función para cerrar sesión
+// Function to sign out
 export const signOut = async () => {
   try {
     const { error } = await supabase.auth.signOut();
@@ -52,9 +53,23 @@ export const signOut = async () => {
   }
 };
 
-// Obtener el usuario actual
+// Function to get the current user
 export const getCurrentUser = async () => {
   try {
+    // First check if we have a session
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      console.error('Error al obtener sesión:', sessionError.message);
+      return null;
+    }
+    
+    // If there's no session or no user in the session, return null
+    if (!sessionData.session) {
+      return null;
+    }
+    
+    // If we have a session, get the user
     const { data, error } = await supabase.auth.getUser();
     
     if (error) {
@@ -65,6 +80,39 @@ export const getCurrentUser = async () => {
     return data.user;
   } catch (error) {
     console.error('Error inesperado al obtener usuario:', error);
+    return null;
+  }
+};
+
+// Function to handle auth state change manually (if needed)
+export const handleAuthStateChange = (callback) => {
+  return supabase.auth.onAuthStateChange((event, session) => {
+    callback(event, session);
+  });
+};
+
+// Process OAuth redirect if needed (call this on initial load)
+export const processOAuthRedirect = async () => {
+  try {
+    // Check if we're processing an OAuth redirect
+    if (window.location.hash && window.location.hash.includes('access_token')) {
+      // Let Supabase handle the redirect
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Error processing OAuth redirect:', error.message);
+        return null;
+      }
+      
+      // Clear the URL hash to avoid issues with navigation
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      return data.session?.user || null;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error processing OAuth redirect:', error);
     return null;
   }
 };
