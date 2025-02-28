@@ -15,6 +15,7 @@ const Index = () => {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
   const { toast } = useToast();
 
   const handleScroll = () => {
@@ -37,6 +38,31 @@ const Index = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
+  }, []);
+
+  // Fetch video URL from Supabase
+  useEffect(() => {
+    const fetchVideoUrl = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('receta')
+          .select('etiqueta_video')
+          .limit(1);
+          
+        if (error) {
+          console.error('Error fetching video URL:', error);
+          return;
+        }
+        
+        if (data && data.length > 0 && data[0].etiqueta_video) {
+          setVideoUrl(data[0].etiqueta_video);
+        }
+      } catch (error) {
+        console.error('Error fetching video URL:', error);
+      }
+    };
+    
+    fetchVideoUrl();
   }, []);
 
   // Verificar si el usuario está autenticado al cargar la página
@@ -180,7 +206,8 @@ const Index = () => {
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center text-dulce-green mb-8">Háblame y Resuelve tus Dudas</h2>
             <div className="flex justify-center">
-              <elevenlabs-convai agent-id="XdyI8LM6MoIpFM6XbUHV"></elevenlabs-convai>
+              {/* Using dangerouslySetInnerHTML to render the custom element */}
+              <div dangerouslySetInnerHTML={{ __html: '<elevenlabs-convai agent-id="XdyI8LM6MoIpFM6XbUHV"></elevenlabs-convai>' }} />
             </div>
           </div>
         </section>
@@ -192,7 +219,7 @@ const Index = () => {
         
         {/* Course Demo */}
         <section id="recetas">
-          <CourseDemo />
+          <CourseDemo videoUrl={videoUrl} />
         </section>
         
         {/* Social Proof */}

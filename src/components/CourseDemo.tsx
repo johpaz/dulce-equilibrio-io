@@ -1,196 +1,125 @@
 
 import { useState } from "react";
-import AudioPlayer from "./AudioPlayer";
+import { Play, ChevronRight } from "lucide-react";
+import CountdownTimer from "./CountdownTimer";
 
-interface TabProps {
-  id: string;
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-}
-
-const Tab = ({ id, label, isActive, onClick }: TabProps) => (
-  <button
-    id={id}
-    onClick={onClick}
-    className={`px-6 py-3 font-medium rounded-t-lg transition-all duration-300 ${
-      isActive
-        ? "bg-white text-dulce-green shadow-sm"
-        : "bg-dulce-beige-light text-dulce-green-dark/70 hover:bg-dulce-beige"
-    }`}
-    aria-selected={isActive}
-    role="tab"
-    aria-controls={`${id}-panel`}
-  >
-    {label}
-  </button>
-);
-
-interface Recipe {
-  title: string;
-  image: string;
-  time: string;
-  difficulty: "Fácil" | "Media" | "Avanzada";
-  description: string;
-  audioKey: string;
-}
-
-const courseSections = [
-  {
-    id: "desayunos",
-    label: "Desayunos",
-    recipes: [
-      {
-        title: "Pancakes de Avena y Plátano",
-        image: "https://images.unsplash.com/photo-1575853121743-60c24f0a7502?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aGVhbHRoeSUyMHBhbmNha2VzfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60",
-        time: "15 min",
-        difficulty: "Fácil" as const,
-        description: "Deliciosos pancakes sin gluten ni azúcar refinada, perfectos para empezar el día con energía.",
-        audioKey: "desayuno1"
-      },
-      {
-        title: "Bowl de Açaí con Granola Casera",
-        image: "https://images.unsplash.com/photo-1590301157890-4810ed352733?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YWNhaSUyMGJvd2x8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
-        time: "10 min",
-        difficulty: "Fácil" as const,
-        description: "Un desayuno refrescante, lleno de antioxidantes y con granola baja en azúcar.",
-        audioKey: "desayuno2"
-      }
-    ]
-  },
-  {
-    id: "snacks",
-    label: "Snacks",
-    recipes: [
-      {
-        title: "Barritas Energéticas de Frutos Secos",
-        image: "https://images.unsplash.com/photo-1622484212385-1d239eda711b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80",
-        time: "20 min",
-        difficulty: "Media" as const,
-        description: "Snacks perfectos para llevar, llenos de proteínas y grasas saludables.",
-        audioKey: "snack1"
-      },
-      {
-        title: "Hummus de Remolacha con Crudités",
-        image: "https://images.unsplash.com/photo-1590301157890-4810ed352733?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YWNhaSUyMGJvd2x8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
-        time: "15 min",
-        difficulty: "Fácil" as const,
-        description: "Un dip colorido y nutritivo, perfecto para un aperitivo saludable.",
-        audioKey: "snack2"
-      }
-    ]
-  },
-  {
-    id: "postres",
-    label: "Postres",
-    recipes: [
-      {
-        title: "Brownie de Batata y Chocolate",
-        image: "https://images.unsplash.com/photo-1589118949245-7d38baf380d6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8YnJvd25pZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
-        time: "40 min",
-        difficulty: "Media" as const,
-        description: "Nuestro postre estrella: un brownie húmedo con un toque de batata que le da cremosidad sin azúcares añadidos.",
-        audioKey: "postre1"
-      },
-      {
-        title: "Cheesecake de Limón sin Hornear",
-        image: "https://images.unsplash.com/photo-1524351199678-941a58a3df50?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Y2hlZXNlY2FrZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
-        time: "30 min + 4h refrigeración",
-        difficulty: "Avanzada" as const,
-        description: "Un postre refrescante con base de frutos secos y relleno cremoso de anacardos.",
-        audioKey: "postre2"
-      }
-    ]
-  }
-];
-
-const RecipeCard = ({ recipe }: { recipe: Recipe }) => {
-  return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg animate-fade-in">
-      <div className="relative">
-        <img 
-          src={recipe.image} 
-          alt={recipe.title} 
-          className="w-full h-48 object-cover"
-        />
-        <div className="absolute top-3 right-3 bg-white/90 px-2 py-1 rounded-full text-xs font-medium text-dulce-green">
-          {recipe.time}
-        </div>
-        <div className={`absolute bottom-3 left-3 px-2 py-1 rounded-full text-xs font-medium text-white ${
-          recipe.difficulty === "Fácil" 
-            ? "bg-dulce-green" 
-            : recipe.difficulty === "Media"
-            ? "bg-dulce-gold"
-            : "bg-dulce-gold-dark"
-        }`}>
-          {recipe.difficulty}
-        </div>
-      </div>
-      
-      <div className="p-5">
-        <h3 className="text-lg font-bold text-dulce-green mb-2">{recipe.title}</h3>
-        <p className="text-dulce-green-dark/80 text-sm mb-4">{recipe.description}</p>
-        
-        <AudioPlayer 
-          audioKey={recipe.audioKey} 
-          label="Escucha este paso clave" 
-          small={true}
-        />
-      </div>
-    </div>
-  );
+type CourseDemoProps = {
+  videoUrl?: string;
 };
 
-const CourseDemo = () => {
-  const [activeTab, setActiveTab] = useState("desayunos");
+const CourseDemo = ({ videoUrl }: CourseDemoProps) => {
+  const [isPlaying, setIsPlaying] = useState(false);
   
-  const activeSection = courseSections.find(section => section.id === activeTab) || courseSections[0];
+  // Default video URL if none is provided from Supabase
+  const defaultVideoUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ";
+  const videoToPlay = videoUrl || defaultVideoUrl;
   
+  const handlePlayClick = () => {
+    setIsPlaying(true);
+  };
+
   return (
-    <section className="section-padding bg-white relative">
+    <section className="py-16 bg-white relative overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="badge mb-4 animate-fade-in">Vista Previa</div>
-          <h2 className="section-title animate-fade-in delay-100">Descubre nuestras recetas</h2>
-          <p className="section-subtitle animate-fade-in delay-200">
-            Te mostramos algunas de las creaciones que aprenderás a preparar en nuestro curso.
+        <div className="text-center mb-12">
+          <div className="badge mb-4">Aprende con Nosotros</div>
+          <h2 className="text-3xl md:text-4xl font-bold text-dulce-green mb-6">
+            Recetas que transforman vidas
+          </h2>
+          <p className="text-lg text-dulce-green-dark/80 max-w-3xl mx-auto">
+            Descubre cómo preparar postres deliciosos que nutren tu cuerpo sin sacrificar el sabor.
+            Nuestros videos paso a paso te guiarán en cada proceso.
           </p>
         </div>
-        
-        {/* Tabs */}
-        <div className="flex justify-center mb-8 border-b border-dulce-beige">
-          <div className="flex" role="tablist">
-            {courseSections.map(section => (
-              <Tab
-                key={section.id}
-                id={section.id}
-                label={section.label}
-                isActive={activeTab === section.id}
-                onClick={() => setActiveTab(section.id)}
+
+        <div className="relative max-w-4xl mx-auto bg-white rounded-xl shadow-xl overflow-hidden">
+          {isPlaying ? (
+            <div className="aspect-video w-full">
+              <iframe
+                width="100%"
+                height="100%"
+                src={videoToPlay}
+                title="Receta de Dulce Equilibrio"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="aspect-video"
+              ></iframe>
+            </div>
+          ) : (
+            <div className="aspect-video bg-dulce-beige-light relative group">
+              <img
+                src="https://images.unsplash.com/photo-1612809075925-823b28156ec7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1964&q=80"
+                alt="Preparación de Brownie Saludable"
+                className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
               />
-            ))}
-          </div>
-        </div>
-        
-        {/* Tab panels */}
-        <div className="mt-8">
-          <div 
-            id={`${activeTab}-panel`}
-            role="tabpanel"
-            aria-labelledby={activeTab}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-              {activeSection.recipes.map((recipe, index) => (
-                <RecipeCard key={index} recipe={recipe} />
-              ))}
+              <button
+                onClick={handlePlayClick}
+                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-dulce-green/90 hover:bg-dulce-green text-white p-6 rounded-full shadow-lg transition-all group-hover:scale-110"
+              >
+                <Play className="w-8 h-8" />
+              </button>
+
+              {/* Overlay with info */}
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white">
+                <h3 className="text-xl font-semibold mb-2">Brownie de Batata y Cacao Puro</h3>
+                <p className="text-white/90 text-sm mb-2">
+                  Una explosión de sabor con ingredientes nutritivos
+                </p>
+                <div className="flex items-center text-xs">
+                  <span className="bg-dulce-gold text-white px-2 py-1 rounded-full">Premium</span>
+                  <span className="ml-3">15 minutos</span>
+                  <span className="mx-2">•</span>
+                  <span>Principiante</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Course preview info */}
+          <div className="p-6 border-t border-gray-100">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-dulce-green-dark">
+                  Accede a nuestro curso completo
+                </h3>
+                <p className="text-dulce-green-dark/70 text-sm">
+                  50+ recetas en video con todos los detalles paso a paso
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <CountdownTimer targetDate={new Date().getTime() + 3 * 24 * 60 * 60 * 1000} />
+                <button className="btn-primary whitespace-nowrap flex items-center gap-1">
+                  Ver Curso <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
-        
-        <div className="text-center mt-12">
-          <button className="btn-primary animate-pulse-subtle">
-            Ver todas las recetas
-          </button>
+
+        {/* Featured recipes preview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+          {["Cookies Avena y Chocolate", "Pancakes de Banana", "Helado de Coco"].map((title, idx) => (
+            <div key={idx} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+              <div className="aspect-video bg-dulce-beige-light">
+                <img
+                  src={`https://source.unsplash.com/random/300x200?healthy,dessert&sig=${idx}`}
+                  alt={title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="p-4">
+                <h3 className="font-medium text-dulce-green-dark mb-2">{title}</h3>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-dulce-green-dark/70">10 min · Fácil</span>
+                  <button className="text-dulce-green text-sm font-medium hover:underline flex items-center">
+                    Ver Receta <ChevronRight className="w-3 h-3 ml-1" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
