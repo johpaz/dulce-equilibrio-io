@@ -124,7 +124,7 @@ const HeroSection = ({ videoUrl }: HeroSectionProps) => {
                   
                   <div className="absolute -top-6 -right-6 bg-white rounded-full p-4 shadow-lg animate-fade-in delay-400">
                     <img 
-                      src="https://images2.imgbox.com/5c/d1/7JHIYoSq_o.png" 
+                      src="https://images4.imagebam.com/1e/97/69/MEZY7IW_o.jpg" 
                       alt="Logo Dulce Equilibrio" 
                       className="w-10 h-10 rounded-full object-cover"
                     />
