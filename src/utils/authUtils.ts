@@ -1,10 +1,16 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Crear el cliente de Supabase utilizando las variables de entorno o valores proporcionados
+// Create Supabase client with explicitly provided URL and key
 const supabaseUrl = 'https://kzkmokarzzututvgljzm.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt6a21va2Fyenp1dHV0dmdsanptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA3MDQwNzksImV4cCI6MjA1NjI4MDA3OX0.68PwkieZw7upvRlsG0CgloRz0-OwbeAcpAkUDYzFnr4';
 
+// Make sure both values exist before creating the client
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase URL or Anon Key is missing');
+}
+
+// Create the client with proper error handling
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Función para iniciar sesión con Google
