@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,8 +7,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import { getCurrentUser, processOAuthRedirect } from "./utils/authUtils";
+import { getCurrentUser, processOAuthRedirect, supabase } from "./utils/authUtils";
 import Dashboard from "@/components/Dashboard";
+import LoadingScreen from "./components/LoadingScreen";
 
 const queryClient = new QueryClient();
 
@@ -21,14 +23,12 @@ const App = () => {
       setIsLoading(true);
       
       // First, check if we're in an OAuth redirect flow
-      if (window.location.hash && window.location.hash.includes('access_token')) {
-        const redirectUser = await processOAuthRedirect();
-        if (redirectUser) {
-          setUser(redirectUser);
-          setIsAuthenticated(true);
-          setIsLoading(false);
-          return;
-        }
+      const redirectUser = await processOAuthRedirect();
+      if (redirectUser) {
+        setUser(redirectUser);
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return;
       }
       
       // Otherwise, check for existing session
@@ -39,18 +39,38 @@ const App = () => {
     };
     
     initAuth();
+    
+    // Subscribe to auth state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        
+        // Update user state when auth state changes
+        if (event === 'SIGNED_IN') {
+          const currentUser = session?.user || null;
+          setUser(currentUser);
+          setIsAuthenticated(!!currentUser);
+          
+          // Clear URL hash if it exists
+          if (window.location.hash) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      }
+    );
+    
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
   }, []);
 
   // Crear un componente protegido para rutas que requieren autenticación
   const ProtectedRoute = ({ children }) => {
     if (isLoading) {
-      // Mostrar un spinner mientras carga
-      return (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-dulce-green border-r-transparent"></div>
-          <span className="ml-2">Cargando...</span>
-        </div>
-      );
+      return <LoadingScreen />;
     }
     
     if (!isAuthenticated) {
@@ -61,6 +81,11 @@ const App = () => {
     return children;
   };
 
+  // Mostrar la pantalla de carga durante la inicialización
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -68,7 +93,10 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route 
+              path="/" 
+              element={isAuthenticated ? <Navigate to="/dashboard" /> : <Index />} 
+            />
             <Route 
               path="/dashboard" 
               element={

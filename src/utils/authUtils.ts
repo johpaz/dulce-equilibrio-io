@@ -20,7 +20,6 @@ export const signInWithGoogle = async () => {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/dashboard`,
-        skipBrowserRedirect: false // Importante: permitir que Supabase maneje el redireccionamiento
       },
     });
 
@@ -94,6 +93,12 @@ export const getCurrentUser = async () => {
 export const handleAuthStateChange = (callback) => {
   return supabase.auth.onAuthStateChange((event, session) => {
     console.log('Auth state changed:', event, session?.user?.email);
+    
+    // Redirigir al dashboard si el usuario ha iniciado sesión
+    if (event === 'SIGNED_IN' && window.location.pathname !== '/dashboard') {
+      window.location.href = '/dashboard';
+    }
+    
     callback(event, session);
   });
 };
