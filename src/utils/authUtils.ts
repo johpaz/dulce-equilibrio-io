@@ -19,7 +19,7 @@ export const signInWithGoogle = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: `${window.location.origin}/dashboard`,
         // Important: don't skip the browser redirect to allow Supabase to handle auth properly
         skipBrowserRedirect: false 
       },
@@ -46,6 +46,9 @@ export const signOut = async () => {
       console.error('Error al cerrar sesión:', error.message);
       return { success: false, error };
     }
+    
+    // Redirigir al inicio después de cerrar sesión
+    window.location.href = '/';
     
     return { success: true };
   } catch (error) {
@@ -111,6 +114,10 @@ export const processOAuthRedirect = async () => {
       window.history.replaceState({}, document.title, window.location.pathname);
       
       console.log('User authenticated:', data.user);
+      
+      // Redirigir al dashboard después de autenticación exitosa
+      window.location.href = '/dashboard';
+      
       return data.user;
     }
     
