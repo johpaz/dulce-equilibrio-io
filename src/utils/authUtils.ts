@@ -1,4 +1,5 @@
 
+
 import { createClient } from '@supabase/supabase-js';
 
 // Create Supabase client with explicitly provided URL and key
@@ -16,10 +17,19 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Function to sign in with Google
 export const signInWithGoogle = async () => {
   try {
+    // Get the current absolute URL without hash or search parameters
+    const currentOrigin = window.location.origin;
+    const redirectUrl = `${currentOrigin}/dashboard`;
+    
+    console.log('Redirecting to:', redirectUrl);
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: redirectUrl,
+        queryParams: {
+          prompt: 'select_account', // Forces to show account selector even if user is already logged in
+        }
       },
     });
 
@@ -137,3 +147,4 @@ export const processOAuthRedirect = async () => {
     return null;
   }
 };
+

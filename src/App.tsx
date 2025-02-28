@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,19 +22,31 @@ const App = () => {
       setIsLoading(true);
       
       // First, check if we're in an OAuth redirect flow
-      const redirectUser = await processOAuthRedirect();
-      if (redirectUser) {
-        setUser(redirectUser);
-        setIsAuthenticated(true);
-        setIsLoading(false);
-        return;
+      try {
+        const redirectUser = await processOAuthRedirect();
+        if (redirectUser) {
+          console.log("OAuth redirect processed with user:", redirectUser);
+          setUser(redirectUser);
+          setIsAuthenticated(true);
+          setIsLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error("Error processing OAuth redirect:", error);
       }
       
       // Otherwise, check for existing session
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
-      setIsAuthenticated(!!currentUser);
-      setIsLoading(false);
+      try {
+        const currentUser = await getCurrentUser();
+        console.log("Current user from session:", currentUser);
+        setUser(currentUser);
+        setIsAuthenticated(!!currentUser);
+      } catch (error) {
+        console.error("Error getting current user:", error);
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
+      }
     };
     
     initAuth();
