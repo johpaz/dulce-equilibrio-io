@@ -6,10 +6,15 @@ import CourseDemo from "@/components/CourseDemo";
 import SocialProof from "@/components/SocialProof";
 import PricingTable from "@/components/PricingTable";
 import FAQ from "@/components/FAQ";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, LogIn, LogOut, User } from "lucide-react";
+import { signInWithGoogle, signOut, getCurrentUser } from "@/utils/authUtils";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleScroll = () => {
     if (window.scrollY > 500) {
@@ -33,6 +38,63 @@ const Index = () => {
     };
   }, []);
 
+  // Verificar si el usuario está autenticado al cargar la página
+  useEffect(() => {
+    const checkUser = async () => {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    };
+    
+    checkUser();
+    
+    // Suscribirse a los cambios de autenticación
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        const currentUser = session?.user || null;
+        setUser(currentUser);
+      }
+    );
+    
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogin = async () => {
+    if (user) {
+      // Si el usuario ya está autenticado, cerrar sesión
+      setLoading(true);
+      const { success, error } = await signOut();
+      setLoading(false);
+      
+      if (success) {
+        toast({
+          title: "Sesión cerrada",
+          description: "Has cerrado sesión correctamente.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "Error al cerrar sesión",
+          variant: "destructive",
+        });
+      }
+    } else {
+      // Iniciar sesión con Google
+      setLoading(true);
+      const { success, error } = await signInWithGoogle();
+      setLoading(false);
+      
+      if (!success) {
+        toast({
+          title: "Error",
+          description: error.message || "Error al iniciar sesión con Google",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   return (
     <div className="bg-white">
       {/* Navbar placeholder - to be implemented */}
@@ -46,8 +108,29 @@ const Index = () => {
             <a href="#precios" className="text-dulce-green-dark hover:text-dulce-green transition-colors">Precios</a>
             <a href="#faq" className="text-dulce-green-dark hover:text-dulce-green transition-colors">FAQ</a>
           </nav>
-          <button className="bg-dulce-green text-white px-4 py-2 rounded-full text-sm font-medium transition-all hover:bg-dulce-green-dark">
-            Iniciar Sesión
+          <button 
+            onClick={handleLogin}
+            disabled={loading}
+            className={`
+              flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all
+              ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-dulce-green-dark'}
+              ${user ? 'bg-dulce-beige text-dulce-green-dark' : 'bg-dulce-green text-white'}
+            `}
+          >
+            {loading ? (
+              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></span>
+            ) : user ? (
+              <>
+                <User className="w-4 h-4" />
+                <span className="max-w-[100px] truncate">{user.email?.split('@')[0] || 'Usuario'}</span>
+                <LogOut className="w-4 h-4" />
+              </>
+            ) : (
+              <>
+                <LogIn className="w-4 h-4" />
+                <span>Iniciar Sesión</span>
+              </>
+            )}
           </button>
         </div>
       </header>
