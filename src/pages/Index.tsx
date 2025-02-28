@@ -7,7 +7,7 @@ import SocialProof from "@/components/SocialProof";
 import PricingTable from "@/components/PricingTable";
 import FAQ from "@/components/FAQ";
 import { ArrowUp, LogIn, LogOut, User } from "lucide-react";
-import { signInWithGoogle, signOut, getCurrentUser } from "@/utils/authUtils";
+import { signInWithGoogle, signOut, getCurrentUser, supabase } from "@/utils/authUtils";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
