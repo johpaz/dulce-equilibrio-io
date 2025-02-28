@@ -1,4 +1,5 @@
 
+
 import { createClient } from '@supabase/supabase-js';
 
 // Create Supabase client with explicitly provided URL and key
@@ -16,10 +17,16 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Function to sign in with Google
 export const signInWithGoogle = async () => {
   try {
+    console.log('Iniciando sesión con Google...');
+
+    // Define our auth redirect URL - we'll redirect here after authentication
+    const redirectUrl = `${window.location.origin}/dashboard`;
+    console.log('Redirect URL:', redirectUrl);
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: redirectUrl,
         // Important: don't skip the browser redirect to allow Supabase to handle auth properly
         skipBrowserRedirect: false 
       },
@@ -30,6 +37,9 @@ export const signInWithGoogle = async () => {
       return { success: false, error };
     }
 
+    // Note: The actual redirect will be handled by Supabase, not this code
+    // as we have set skipBrowserRedirect to false
+    console.log('Autenticación iniciada correctamente, esperando redirección de Supabase');
     return { success: true, data };
   } catch (error) {
     console.error('Error inesperado al iniciar sesión:', error);
@@ -116,6 +126,7 @@ export const processOAuthRedirect = async () => {
       console.log('User authenticated:', data.user);
       
       // Redirigir al dashboard después de autenticación exitosa
+      console.log('Redirigiendo al dashboard...');
       window.location.href = '/dashboard';
       
       return data.user;
@@ -127,3 +138,4 @@ export const processOAuthRedirect = async () => {
     return null;
   }
 };
+
