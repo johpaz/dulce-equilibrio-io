@@ -6,6 +6,7 @@ import CourseDemo from "@/components/CourseDemo";
 import SocialProof from "@/components/SocialProof";
 import PricingTable from "@/components/PricingTable";
 import FAQ from "@/components/FAQ";
+import Dashboard from "@/components/Dashboard";
 import { ArrowUp, LogIn, LogOut, User } from "lucide-react";
 import { signInWithGoogle, signOut, getCurrentUser, supabase } from "@/utils/authUtils";
 import { useToast } from "@/hooks/use-toast";
@@ -94,6 +95,41 @@ const Index = () => {
       }
     }
   };
+
+  // Si el usuario está autenticado, mostrar el dashboard
+  if (user) {
+    return (
+      <>
+        {/* Navbar placeholder - to be implemented */}
+        <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-md z-50 py-4 px-6 shadow-sm">
+          <div className="container mx-auto flex justify-between items-center">
+            <div className="text-dulce-green font-bold text-xl">Dulce Equilibrio</div>
+            <button 
+              onClick={handleLogin}
+              disabled={loading}
+              className={`
+                flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all
+                ${loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-dulce-green-dark'}
+                ${user ? 'bg-dulce-beige text-dulce-green-dark' : 'bg-dulce-green text-white'}
+              `}
+            >
+              {loading ? (
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></span>
+              ) : (
+                <>
+                  <User className="w-4 h-4" />
+                  <span className="max-w-[100px] truncate">{user.email?.split('@')[0] || 'Usuario'}</span>
+                  <LogOut className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </div>
+        </header>
+
+        <Dashboard user={user} onLogout={() => setUser(null)} />
+      </>
+    );
+  }
 
   return (
     <div className="bg-white">
