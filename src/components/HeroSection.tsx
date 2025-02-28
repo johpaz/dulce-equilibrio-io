@@ -3,12 +3,25 @@ import { useState, useEffect } from "react";
 import { ArrowRight, Mic } from "lucide-react";
 import AudioPlayer from "./AudioPlayer";
 
-const HeroSection = () => {
+type HeroSectionProps = {
+  videoUrl?: string;
+};
+
+const HeroSection = ({ videoUrl }: HeroSectionProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     setIsLoaded(true);
   }, []);
+
+  // Default video URL if none is provided from Supabase
+  const defaultVideoUrl = "https://www.youtube.com/embed/dQw4w9WgXcQ";
+  const videoToPlay = videoUrl || defaultVideoUrl;
+
+  const handlePlayClick = () => {
+    setIsPlaying(true);
+  };
 
   return (
     <section className="min-h-[90vh] relative overflow-hidden flex items-center">
@@ -58,37 +71,62 @@ const HeroSection = () => {
             </div>
           </div>
           
-          {/* Right column - Image */}
+          {/* Right column - Image or Video */}
           <div className={`transition-all duration-1000 ${isLoaded ? "opacity-100" : "opacity-0 translate-x-10"}`}>
             <div className="relative">
-              {/* Main image */}
-              <div className="rounded-2xl overflow-hidden shadow-xl animate-fade-in delay-200">
-                <img
-                  src="https://images.unsplash.com/photo-1622484212385-1d239eda711b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80"
-                  alt="Brownie de batata saludable"
-                  className="w-full h-auto object-cover aspect-[4/5]"
-                />
-              </div>
-              
-              {/* Floating elements */}
-              <div className="absolute -bottom-5 -left-5 bg-white rounded-lg p-4 shadow-lg animate-fade-in delay-300">
-                <div className="flex items-center gap-3">
-                  <div className="bg-dulce-green-light/20 rounded-full p-2">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#3D8168" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M16 12L10 8V16L16 12Z" fill="#3D8168" stroke="#3D8168" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-dulce-green">Curso en video</p>
-                    <p className="text-xs text-dulce-green-dark/70">+50 recetas en HD</p>
-                  </div>
+              {isPlaying ? (
+                <div className="rounded-2xl overflow-hidden shadow-xl animate-fade-in">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={videoToPlay}
+                    title="Receta de Dulce Equilibrio"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="aspect-[4/5]"
+                  ></iframe>
                 </div>
-              </div>
-              
-              <div className="absolute -top-6 -right-6 bg-white rounded-full p-4 shadow-lg animate-fade-in delay-400">
-                <img src="https://via.placeholder.com/60x60" alt="Logo Dulce Equilibrio" className="w-10 h-10" />
-              </div>
+              ) : (
+                <>
+                  {/* Main image with play button */}
+                  <div className="rounded-2xl overflow-hidden shadow-xl animate-fade-in delay-200 relative group">
+                    <img
+                      src="https://images.unsplash.com/photo-1622484212385-1d239eda711b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80"
+                      alt="Brownie de batata saludable"
+                      className="w-full h-auto object-cover aspect-[4/5]"
+                    />
+                    <button
+                      onClick={handlePlayClick}
+                      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-dulce-green/90 hover:bg-dulce-green text-white p-5 rounded-full shadow-lg transition-all group-hover:scale-110"
+                    >
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 12L10 8V16L16 12Z" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                  
+                  {/* Floating elements */}
+                  <div className="absolute -bottom-5 -left-5 bg-white rounded-lg p-4 shadow-lg animate-fade-in delay-300">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-dulce-green-light/20 rounded-full p-2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#3D8168" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M16 12L10 8V16L16 12Z" fill="#3D8168" stroke="#3D8168" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-dulce-green">Curso en video</p>
+                        <p className="text-xs text-dulce-green-dark/70">+50 recetas en HD</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="absolute -top-6 -right-6 bg-white rounded-full p-4 shadow-lg animate-fade-in delay-400">
+                    <img src="https://via.placeholder.com/60x60" alt="Logo Dulce Equilibrio" className="w-10 h-10" />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

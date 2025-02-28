@@ -199,7 +199,7 @@ const Index = () => {
 
       <main className="pt-16">
         {/* Hero Section */}
-        <HeroSection />
+        <HeroSection videoUrl={videoUrl} />
         
         {/* ElevenLabs Widget */}
         <section className="py-10 bg-dulce-beige-light">
@@ -219,7 +219,7 @@ const Index = () => {
         
         {/* Course Demo */}
         <section id="recetas">
-          <CourseDemo videoUrl={videoUrl} />
+          <CourseDemo />
         </section>
         
         {/* Social Proof */}
